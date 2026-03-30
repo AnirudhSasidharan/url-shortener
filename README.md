@@ -119,17 +119,6 @@ To use PostgreSQL in production, set:
 DATABASE_URL=postgresql://user:password@localhost/dbname
 ```
 
----
-
-## Roadmap
-
-- [ ] React frontend dashboard with charts
-- [ ] Docker + docker-compose setup
-- [ ] JWT authentication and user accounts
-- [ ] Link expiry support
-- [ ] Rate limiting on URL creation
-
----
 
 ## License
 
