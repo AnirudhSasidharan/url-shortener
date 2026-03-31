@@ -47,7 +47,7 @@ def generate_short_code(length: int = 6) -> str:
     chars = string.ascii_letters + string.digits
     return "".join(random.choices(chars, k=length))
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "https://url-shortener-production-3ff3.up.railway.app"
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
