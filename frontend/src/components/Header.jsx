@@ -5,7 +5,7 @@ export default function Header() {
         <div className="logo-mark">S</div>
         <div className="logo-text">snip<span>.</span></div>
       </div>
-      <div className="header-sub">// production-grade url shortener + analytics dashboard</div>
+      <div className="header-sub"> </div>
     </header>
   );
 }
