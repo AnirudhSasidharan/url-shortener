@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+
+  #  1. PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: snip
+      POSTGRES_PASSWORD: snip123
+      POSTGRES_DB: snipdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snip -d snipdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  #  2. Redis Cache 
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── 3. FastAPI Backend 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://snip:snip123@db:5432/snipdb
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  #  4. React Frontend 
+  frontend:
+    build:
+      context: ./frontend      
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:80"              # Host port 3000 → Nginx port 80 inside container
+    depends_on:
+      - backend                # Wait for backend to start first
+
+volumes:
+  postgres_data:
