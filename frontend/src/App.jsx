@@ -7,7 +7,7 @@ import AnalyticsPanel from "./components/AnalyticsPanel";
 import ClicksChart from "./components/ClicksChart";
 import "./App.css";
 
-const API = "http://localhost:8000";
+const API = "https://url-shortener-production-3ff3.up.railway.app";
 
 export default function App() {
   const [urls, setUrls] = useState([]);
