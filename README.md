@@ -1,13 +1,13 @@
 # snip. — URL Shortener with Analytics
 
-A production-style URL shortener built with **FastAPI**, **Redis**, and **PostgreSQL** (SQLite for local dev). Supports custom aliases, click tracking, and per-link analytics.
+A production-style URL shortener built with **FastAPI**, **Redis**, and **PostgreSQL**. Supports custom aliases, click tracking, per-link analytics, and a React dashboard. Fully containerized with Docker.
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
-![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 
 ---
@@ -19,6 +19,8 @@ A production-style URL shortener built with **FastAPI**, **Redis**, and **Postgr
 - Track every click with timestamp, IP address, and browser info
 - View per-link analytics and top-performing links
 - Redis caching layer for fast redirects without hitting the database
+- React dashboard with live stats and click charts
+- Fully containerized — runs with one command via Docker Compose
 - Auto-generated API docs via Swagger UI
 
 ---
@@ -27,43 +29,95 @@ A production-style URL shortener built with **FastAPI**, **Redis**, and **Postgr
 
 ```
 url-shortener/
+├── docker-compose.yml        — Orchestrates all 4 services
 ├── backend/
-│   ├── main.py          — API routes and application entry point
-│   ├── models.py        — Database models (URLs and Clicks)
-│   ├── crud.py          — Database operations
-│   ├── database.py      — Database connection setup
-│   ├── cache.py         — Redis client setup
-│   └── requirements.txt
+│   ├── main.py               — API routes and application entry point
+│   ├── models.py             — Database models (URLs and Clicks)
+│   ├── crud.py               — Database operations
+│   ├── database.py           — Database connection setup
+│   ├── cache.py              — Redis client setup
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── .dockerignore
 └── frontend/
-    └── index.html       — Analytics dashboard UI
+    ├── src/
+    │   ├── components/
+    │   │   ├── AnalyticsPanel.jsx
+    │   │   ├── ClicksChart.jsx
+    │   │   ├── Header.jsx
+    │   │   ├── ShortenForm.jsx
+    │   │   ├── StatsBar.jsx
+    │   │   └── UrlTable.jsx
+    │   ├── App.jsx
+    │   ├── App.css
+    │   └── index.js
+    ├── Dockerfile
+    └── .dockerignore
 ```
 
 ---
 
-## Getting Started
+## Running with Docker (Recommended)
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
+
+### Start the full stack
+
+```bash
+git clone https://github.com/AnirudhSasidharan/url-shortener.git
+cd url-shortener
+docker compose up --build
+```
+
+That's it. Docker pulls and starts all 4 services automatically.
+
+| Service | URL |
+|---------|-----|
+| React Frontend | http://localhost:3000 |
+| FastAPI Backend | http://localhost:8000 |
+| Swagger Docs | http://localhost:8000/docs |
+| PostgreSQL | localhost:5432 |
+| Redis | localhost:6379 |
+
+### Stop everything
+```bash
+docker compose down
+```
+
+### Stop and wipe the database
+```bash
+docker compose down -v
+```
+
+---
+
+## Running Locally (without Docker)
 
 ### Prerequisites
 - Python 3.10+
-- Redis (optional — app works without it, caching will be disabled)
+- Node.js 18+
+- Redis (optional — app works without it, caching disabled)
 
-### Installation
+### Backend
 
 ```bash
-# Clone the repo
-git clone https://github.com/AnirudhSasidharan/url-shortener.git
-cd url-shortener/backend
-
-# Install dependencies
+cd backend
 pip install -r requirements.txt
-
-# Start the server
 uvicorn main:app --reload
 ```
 
-API runs at: `http://localhost:8000`  
-Swagger docs: `http://localhost:8000/docs`
+API runs at: `http://localhost:8000`
 
-Open `frontend/index.html` in your browser for the dashboard.
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Frontend runs at: `http://localhost:3000`
 
 ---
 
@@ -103,7 +157,7 @@ POST /shorten
 
 ## How It Works
 
-When a short link is visited, the server checks Redis first. If the URL is cached, it redirects instantly without touching the database. On a cache miss, it queries PostgreSQL, repopulates the cache, and redirects. Every visit is logged with a timestamp, IP address, and user agent for analytics.
+When a short link is visited, the server checks Redis first. If the URL is cached, it redirects instantly without touching the database. On a cache miss, it queries PostgreSQL, repopulates the cache, and redirects. Every visit is logged with a timestamp, IP address, and user agent for analytics. The React dashboard polls the API every 10 seconds to keep stats live.
 
 ---
 
@@ -114,10 +168,11 @@ When a short link is visited, the server checks Redis first. If the URL is cache
 | `DATABASE_URL` | `sqlite:///./urls.db` | Database connection string |
 | `REDIS_URL` | `redis://localhost:6379` | Redis connection string |
 
-To use PostgreSQL in production, set:
+In Docker, these are set automatically via `docker-compose.yml`. For manual setup with PostgreSQL:
 ```
 DATABASE_URL=postgresql://user:password@localhost/dbname
 ```
+
 
 
 
